@@ -1,10 +1,596 @@
-<html lang="en">
+<!DOCTYPE html>
+<html lang="de">
+
 <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>bnzcodes.github.io</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>German N-V Verbindungen Master</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #f8f9fa;
+            --success: #27ae60;
+            --text: #2d3436;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #dfe6e9;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            width: 100%;
+            padding: 1.5rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 900px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .btn-mode {
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-mode.active {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+
+        .btn-shuffle {
+            background: #6c5ce7;
+            color: white;
+        }
+
+        /* Flashcard Styles */
+        #flashcard-container {
+            perspective: 1000px;
+            height: 350px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border-radius: 20px;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            box-sizing: border-box;
+            border-radius: 20px;
+            background: white;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: #f1f2f6;
+            border: 3px solid var(--secondary);
+        }
+
+        .card-face h2 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin: 10px 0;
+        }
+
+        .card-face p {
+            color: #636e72;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .translation {
+            color: var(--accent) !important;
+            font-weight: bold;
+            font-size: 1.4rem !important;
+            margin-top: 20px !important;
+            text-transform: none !important;
+        }
+
+        /* Quiz Styles */
+        #quiz-container {
+            display: none;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .quiz-question {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: var(--primary);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: var(--light);
+            text-align: left;
+            padding: 18px;
+            border: 2px solid #edf2f7;
+            border-radius: 12px;
+            font-size: 1.1rem;
+        }
+
+        .option-btn:hover {
+            background: #e2e8f0;
+            border-color: #cbd5e0;
+        }
+
+        .correct {
+            background: var(--success) !important;
+            color: white;
+            border-color: var(--success);
+        }
+
+        .wrong {
+            background: var(--accent) !important;
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* Search List */
+        #list-container {
+            display: none;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        #progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #dfe6e9;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background: var(--secondary);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+    </style>
 </head>
+
 <body>
-     
+
+    <header>
+        <h1>German Nomen-Verb Verbindungen (139 total)</h1>
+    </header>
+
+    <div class="container">
+        <div id="progress-bar">
+            <div id="progress-fill"></div>
+        </div>
+
+        <div class="nav-buttons">
+            <button onclick="showMode('flash')" id="btn-flash" class="btn-mode active">Flashcards</button>
+            <button onclick="showMode('quiz')" id="btn-quiz" class="btn-mode">Quiz</button>
+            <button onclick="showMode('list')" id="btn-list" class="btn-mode">Search List</button>
+            <button onclick="shuffleData()" class="btn-shuffle">Shuffle List 🔀</button>
+        </div>
+
+        <!-- Flashcards -->
+        <div id="flashcard-container" onclick="flipCard()">
+            <div class="card" id="card-element">
+                <div class="card-face card-front">
+                    <p>Nomen-Verb-Verbindung</p>
+                    <h2 id="card-verbindung">...</h2>
+                </div>
+                <div class="card-face card-back">
+                    <p>Bedeutung</p>
+                    <h2 id="card-bedeutung">...</h2>
+                    <p class="translation" id="card-translation">...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz -->
+        <div id="quiz-container">
+            <div class="quiz-question" id="quiz-q">?</div>
+            <div class="options-grid" id="quiz-options"></div>
+        </div>
+
+        <!-- List View -->
+        <div id="list-container">
+            <input type="text" class="search-box" id="search-input" placeholder="Search German or English..."
+                onkeyup="filterList()">
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th>Verbindung</th>
+                        <th>Bedeutung / Übersetzung</th>
+                    </tr>
+                </thead>
+                <tbody id="list-body"></tbody>
+            </table>
+        </div>
+
+        <div class="controls" id="general-controls">
+            <button onclick="prevItem()" style="background: #636e72; color: white;">← Prev</button>
+            <span id="counter" style="font-weight: bold; font-size: 1.2rem;">1 / 139</span>
+            <button onclick="nextItem()" style="background: var(--primary); color: white;">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        const fullData = [
+            { v: "sich in Abhängigkeit befinden", b: "von etwas abhängen", t: "to be dependent on" },
+            { v: "auf Ablehnung stoßen", b: "abgelehnt werden", t: "to meet with rejection" },
+            { v: "Abschied nehmen", b: "sich verabschieden", t: "to say goodbye" },
+            { v: "einen Abschluss finden", b: "abgeschlossen werden", t: "to come to a conclusion" },
+            { v: "eine Absprache treffen", b: "etwas absprechen", t: "to make an arrangement" },
+            { v: "Anerkennung finden/genießen", b: "anerkannt werden", t: "to gain recognition" },
+            { v: "den Anfang machen", b: "etwas anfangen", t: "to make a start" },
+            { v: "Anklage erheben", b: "jemanden anklagen", t: "to file charges" },
+            { v: "Anspruch haben/erheben auf", b: "etwas beanspruchen", t: "to be entitled to/to claim" },
+            { v: "Ansprüche stellen an", b: "etwas fordern", t: "to make demands on" },
+            { v: "Anstrengungen unternehmen", b: "sich anstrengen", t: "to make efforts" },
+            { v: "Anstoß nehmen an", b: "etwas beanstanden/missbilligen", t: "to take offense at" },
+            { v: "einen Antrag stellen", b: "etwas beantragen", t: "to submit an application" },
+            { v: "zur Anwendung kommen", b: "etwas anwenden", t: "to be applied" },
+            { v: "in Aufregung versetzen", b: "jemanden aufregen", t: "to cause excitement" },
+            { v: "in Aufregung geraten", b: "sich aufregen", t: "to get excited" },
+            { v: "einen Auftrag geben/erteilen", b: "jemanden beauftragen", t: "to place an order" },
+            { v: "einen Auftrag bekommen/erhalten", b: "beauftragt werden", t: "to receive an order" },
+            { v: "etwas/jemanden im Auge haben/behalten", b: "beobachten/kontrollieren", t: "to keep an eye on" },
+            { v: "Auskunft erteilen/geben", b: "jemanden informieren", t: "to give information" },
+            { v: "etwas in Aussicht stellen", b: "etwas als möglich darstellen", t: "hứa hẹn/triển vọng" },
+            { v: "eine Auswahl treffen", b: "etwas/jemanden auswählen", t: "to make a selection" },
+            { v: "zur Auswahl stehen", b: "ausgewählt werden können", t: "to be available for selection" },
+            { v: "Auswirkungen haben auf", b: "sich auf etwas auswirken", t: "to have an effect on" },
+            { v: "sich im Bau befinden", b: "bauen/gebaut werden", t: "to be under construction" },
+            { v: "Beachtung finden", b: "etwas beachten", t: "to receive attention" },
+            { v: "einen Beitrag leisten zu", b: "etwas beitragen", t: "to make a contribution to" },
+            { v: "unter Beobachtung stehen", b: "beobachtet werden", t: "to be under observation" },
+            { v: "Berücksichtigung finden", b: "etwas berücksichtigen", t: "to take into consideration" },
+            { v: "berücksichtigt werden", b: "in Betracht gezogen werden", t: "to be taken into consideration" },
+            { v: "einen Beschluss fassen", b: "etwas beschließen", t: "thông qua quyết định" },
+            { v: "Beschwerde einlegen/erheben gegen", b: "sich offiziell beschweren", t: "khiếu nại" },
+            { v: "etwas in Betracht ziehen", b: "etwas erwägen/überlegen", t: "to consider" },
+            { v: "in Bewegung geraten/kommen", b: "sich bewegen", t: "to get moving" },
+            { v: "unter Beweis stellen/einen Beweis erbringen", b: "etwas beweisen", t: "to prove" },
+            { v: "Bezug nehmen auf", b: "sich auf etwas beziehen", t: "to refer to" },
+            { v: "Bilanz ziehen", b: "etwas abschließen", t: "tổng kết" },
+            { v: "etwas zur Diskussion stellen", b: "etwas diskutieren", t: "to put up for discussion" },
+            { v: "zur Diskussion stehen", b: "diskutiert werden", t: "to be under discussion" },
+            { v: "jemanden unter Druck setzen", b: "jemanden bedrängen", t: "to put pressure on sb" },
+            { v: "unter Druck stehen", b: "bedrängt werden", t: "to be under pressure" },
+            { v: "einen Eindruck machen auf/hinterlassen", b: "jemanden beeindrucken", t: "to make an impression" },
+            { v: "den Eindruck gewinnen/haben", b: "denken", t: "to get the impression" },
+            { v: "Eindruck schinden", b: "andere beeindrucken wollen", t: "to impress" },
+            { v: "einen Eindruck erwecken", b: "so wirken als ob", t: "to create an impression" },
+            { v: "Einfluss ausüben/nehmen/haben auf", b: "beeinflussen", t: "to have influence on" },
+            { v: "unter dem Einfluss stehen", b: "beeinflusst werden", t: "to be under the influence" },
+            { v: "eine Einigung erzielen", b: "sich einigen", t: "to reach an agreement" },
+            { v: "Einsicht nehmen in", b: "etwas einsehen", t: "to inspect" },
+            { v: "in Empfang nehmen", b: "jemanden empfangen", t: "to receive" },
+            { v: "eine Entscheidung treffen", b: "sich entscheiden", t: "to make a decision" },
+            { v: "einen Entschluss fassen", b: "sich zu etwas entschließen", t: "to make up one's mind" },
+            { v: "in Erfüllung gehen", b: "erfüllt werden", t: "to come true" },
+            { v: "eine Erklärung abgeben", b: "etwas erklären, erläutern", t: "to make a statement" },
+            { v: "eine Erlaubnis erteilen/geben", b: "jemandem etwas erlauben", t: "to grant permission" },
+            { v: "in Erstaunen versetzen", b: "jemanden erstaunen", t: "to amaze" },
+            { v: "in Erwägung ziehen", b: "etwas erwägen / nachdenken", t: "to consider" },
+            { v: "einen Fehler begehen/machen", b: "sich falsch verhalten", t: "to make a mistake" },
+            { v: "einen Fehler einräumen/zugeben", b: "einsichtig sein", t: "to admit a mistake" },
+            { v: "zur Folge haben", b: "aus etwas folgen", t: "to result in" },
+            { v: "eine Forderung stellen", b: "etwas fordern", t: "to make a demand" },
+            { v: "eine Frage stellen", b: "etwas fragen", t: "to ask a question" },
+            { v: "in Gefahr bringen", b: "jemanden/etwas gefährden", t: "to put in danger" },
+            { v: "in Gefahr schweben/sein", b: "gefährdet sein", t: "to be in danger" },
+            { v: "im Gegensatz stehen zu", b: "jemandem entgegenstehen", t: "to be in contrast to" },
+            { v: "Gesellschaft leisten", b: "jemanden begleiten", t: "to keep sb company" },
+            { v: "ein Gespräch führen", b: "sprechen", t: "to have a conversation" },
+            { v: "Handel treiben", b: "mit etwas handeln", t: "to trade" },
+            { v: "Hilfe leisten", b: "jemandem helfen", t: "to provide help" },
+            { v: "einen Hinweis geben", b: "jemanden auf etwas hinweisen", t: "to give a hint" },
+            { v: "die Hoffnung haben/hegen", b: "auf etwas hoffen", t: "to have hope" },
+            { v: "jemandem Hoffnung machen", b: "hoffen lassen", t: "to give sb hope" },
+            { v: "Interesse zeigen", b: "interessiert sein", t: "to show interest" },
+            { v: "Interesse wecken", b: "jemanden interessieren", t: "to arouse interest" },
+            { v: "sich im Irrtum befinden/sein", b: "sich irren", t: "to be wrong" },
+            { v: "etwas in Kauf nehmen", b: "etwas akzeptieren müssen", t: "to accept" },
+            { v: "jemanden in Kenntnis setzen", b: "jemanden informieren", t: "to inform sb" },
+            { v: "etwas zur Kenntnis nehmen", b: "etwas wahrnehmen", t: "to take note of" },
+            { v: "sich im Klaren sein über", b: "etwas wissen über", t: "to be aware of" },
+            { v: "einen Kompromiss schließen", b: "sich einigen", t: "to reach a compromise" },
+            { v: "Kontakt aufnehmen mit", b: "jemanden kontaktieren", t: "to make contact with" },
+            { v: "in Kraft treten", b: "gültig werden", t: "to come into force" },
+            { v: "außer Kraft setzen", b: "ungültig machen", t: "to override" },
+            { v: "Kritik üben an", b: "jemanden/etwas kritisieren", t: "to criticize" },
+            { v: "auf Kritik stoßen", b: "kritisiert werden", t: "to meet with criticism" },
+            { v: "auf dem Laufenden sein", b: "informiert werden", t: "to be up to date" },
+            { v: "jemanden auf dem Laufenden halten", b: "jemanden informieren", t: "to keep sb informed" },
+            { v: "eine Lösung finden", b: "etwas lösen", t: "to find a solution" },
+            { v: "Maßnahmen treffen/ergreifen", b: "handeln", t: "to take measures" },
+            { v: "eine Meinung/Standpunkt vertreten", b: "etwas meinen", t: "to represent an opinion" },
+            { v: "Nachforschungen anstellen", b: "untersuchen", t: "to conduct investigations" },
+            { v: "an die Öffentlichkeit geraten", b: "veröffentlicht werden", t: "to become public" },
+            { v: "Platz nehmen", b: "sich setzen", t: "to take a seat" },
+            { v: "Protokoll führen/schreiben", b: "protokollieren", t: "to keep log" },
+            { v: "etwas einer Prüfung unterziehen", b: "etwas prüfen", t: "to examine" },
+            { v: "einen Rat erteilen/geben", b: "jemandem etwas raten", t: "to give advice" },
+            { v: "jemanden zu Rate ziehen", b: "um Rat fragen", t: "to consult sb" },
+            { v: "Rechenschaft ablegen", b: "über Vergangenes informieren", t: "to account for" },
+            { v: "jemanden zur Rechenschaft ziehen", b: "verantwortlich machen", t: "to hold accountable" },
+            { v: "in Rechnung stellen", b: "jemandem etwas berechnen", t: "to charge" },
+            { v: "eine Rede halten", b: "reden", t: "to give a speech" },
+            { v: "jemanden zur Rede stellen", b: "Erklärung auffordern", t: "to confront sb" },
+            { v: "Rücksicht nehmen auf", b: "Interessen anderer beachten", t: "to take into consideration" },
+            { v: "in Sicht sein", b: "erwartet werden", t: "to be expected" },
+            { v: "Stellung nehmen", b: "etwas begründen", t: "to take a position" },
+            { v: "etwas unter Strafe stellen", b: "bestraft werden", t: "to be punishable" },
+            { v: "unter Strafe stehen", b: "bestraft werden", t: "to be punishable" },
+            { v: "in Streik treten", b: "streiken", t: "to go on strike" },
+            { v: "Überlegungen anstellen", b: "nachdenken/überlegen", t: "to reflect" },
+            { v: "Unterstützung genießen/finden", b: "unterstützt werden", t: "to enjoy support" },
+            { v: "ein Urteil fällen", b: "etwas beurteilen", t: "tuyên án" },
+            { v: "Recht sprechen", b: "beurteilen", t: "deliver justice" },
+            { v: "Verantwortung übernehmen für", b: "sich verantwortlich zeigen", t: "to take responsibility for" },
+            { v: "Verantwortung tragen für", b: "verantwortlich sein", t: "to bear responsibility" },
+            { v: "jemanden zur Verantwortung ziehen", b: "jemanden verantwortlich machen", t: "to hold sb responsible" },
+            { v: "Verbesserungen durchführen", b: "verbessern", t: "to make improvements" },
+            { v: "sich in Verbindung setzen mit", b: "jemanden kontaktieren", t: "to get in touch with" },
+            { v: "in Verbindung stehen", b: "Kontakt haben", t: "to be connected with" },
+            { v: "ein Verbrechen begehen/verüben", b: "kriminell handeln", t: "to commit a crime" },
+            { v: "Verdacht hegen/schöpfen", b: "jemanden verdächtigen", t: "to suspect" },
+            { v: "unter Verdacht stehen", b: "verdächtigt werden", t: "to be under suspicion" },
+            { v: "eine Vereinbarung treffen", b: "etwas vereinbaren", t: "to reach an agreement" },
+            { v: "zur Verfügung stellen", b: "etwas bereitstellen", t: "to make available" },
+            { v: "zur Verfügung stehen", b: "gebraucht werden können", t: "to be available" },
+            { v: "Verhandlungen führen", b: "verhandeln", t: "to conduct negotiations" },
+            { v: "Verständnis haben/zeigen", b: "etwas verstehen", t: "to understand" },
+            { v: "einen Versuch unternehmen", b: "etwas versuchen", t: "to make an attempt" },
+            { v: "Verwendung finden", b: "verwendet werden", t: "to be used" },
+            { v: "jemanden zur Verzweiflung bringen", b: "jemanden verrückt machen", t: "to drive sb to despair" },
+            { v: "Vorbereitungen treffen", b: "etwas vorbereiten", t: "to make preparations" },
+            { v: "jemanden einen Vorwurf machen", b: "jemandem etwas vorwerfen", t: "to accuse sb" },
+            { v: "eine Wahl treffen", b: "etwas wählen", t: "to make a choice" },
+            { v: "Wert legen auf", b: "etwas wichtig finden", t: "to attach importance to" },
+            { v: "Widerspruch einlegen", b: "juristisch widersprechen", t: "to lodge an objection" },
+            { v: "Widerstand leisten", b: "sich widersetzen", t: "to resist" },
+            { v: "sich zu Wort melden", b: "reden wollen", t: "to speak up" },
+            { v: "sich ins Zeug legen", b: "sich sehr anstrengen", t: "to make a big effort" },
+            { v: "Zweifel haben/hegen", b: "etwas bezweifeln", t: "to have doubts" },
+            { v: "außer Zweifel stehen", b: "nicht bezweifelt werden", t: "to be beyond doubts" }
+        ];
+
+        let data = [...fullData];
+        let currentIndex = 0;
+        let currentMode = 'flash';
+
+        function shuffleData() {
+            data.sort(() => Math.random() - 0.5);
+            currentIndex = 0;
+            refreshDisplay();
+            alert("List Shuffled!");
+        }
+
+        function showMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
+            document.getElementById('flashcard-container').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('list-container').style.display = 'none';
+            document.getElementById('general-controls').style.display = (mode === 'list') ? 'none' : 'flex';
+
+            if (mode === 'flash') {
+                document.getElementById('flashcard-container').style.display = 'block';
+                document.getElementById('btn-flash').classList.add('active');
+                renderFlashcard();
+            } else if (mode === 'quiz') {
+                document.getElementById('quiz-container').style.display = 'block';
+                document.getElementById('btn-quiz').classList.add('active');
+                renderQuiz();
+            } else {
+                document.getElementById('list-container').style.display = 'block';
+                document.getElementById('btn-list').classList.add('active');
+                renderList();
+            }
+            updateProgress();
+        }
+
+        function renderFlashcard() {
+            const item = data[currentIndex];
+            document.getElementById('card-element').classList.remove('is-flipped');
+            document.getElementById('card-verbindung').innerText = item.v;
+            document.getElementById('card-bedeutung').innerText = item.b;
+            document.getElementById('card-translation').innerText = item.t;
+            updateCounter();
+        }
+
+        function flipCard() {
+            document.getElementById('card-element').classList.toggle('is-flipped');
+        }
+
+        function renderQuiz() {
+            const item = data[currentIndex];
+            document.getElementById('quiz-q').innerText = `Was bedeutet: "${item.v}"?`;
+
+            let options = [item.b];
+            while (options.length < 4) {
+                let randomItem = fullData[Math.floor(Math.random() * fullData.length)].b;
+                if (!options.includes(randomItem)) options.push(randomItem);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            const grid = document.getElementById('quiz-options');
+            grid.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, item.b, btn);
+                grid.appendChild(btn);
+            });
+            updateCounter();
+        }
+
+        function checkAnswer(selected, correct, btn) {
+            if (selected === correct) {
+                btn.classList.add('correct');
+                setTimeout(nextItem, 800);
+            } else {
+                btn.classList.add('wrong');
+            }
+        }
+
+        function renderList() {
+            const body = document.getElementById('list-body');
+            body.innerHTML = '';
+            fullData.forEach(item => {
+                const row = `<tr><td><strong>${item.v}</strong></td><td>${item.b}<br><span style="color:var(--accent)">${item.t}</span></td></tr>`;
+                body.innerHTML += row;
+            });
+        }
+
+        function filterList() {
+            let input = document.getElementById('search-input').value.toLowerCase();
+            let rows = document.getElementById('list-body').getElementsByTagName('tr');
+            for (let row of rows) {
+                row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
+            }
+        }
+
+        function nextItem() {
+            if (currentIndex < data.length - 1) {
+                currentIndex++;
+                refreshDisplay();
+            } else {
+                alert("End of list reached!");
+            }
+        }
+
+        function prevItem() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                refreshDisplay();
+            }
+        }
+
+        function refreshDisplay() {
+            if (currentMode === 'flash') renderFlashcard();
+            if (currentMode === 'quiz') renderQuiz();
+            updateProgress();
+        }
+
+        function updateCounter() {
+            document.getElementById('counter').innerText = `${currentIndex + 1} / ${data.length}`;
+        }
+
+        function updateProgress() {
+            const percent = ((currentIndex + 1) / data.length) * 100;
+            document.getElementById('progress-fill').style.width = percent + '%';
+        }
+
+        showMode('flash');
+    </script>
+
 </body>
+
 </html>
